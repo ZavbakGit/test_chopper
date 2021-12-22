@@ -1,0 +1,268 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "spomidor dostavka 2021-12-22",
+    "version": "1.0.0",
+    "title": "Сервис для доставки Синьор помидо",
+    "contact": {
+      "email": "ag@79900.ru"
+    }
+  },
+  "host": "172.31.255.150",
+  "basePath": "/copy_erp/hs/by_openapi",
+  "schemes": [
+    "http"
+  ],
+  "tags": [
+    {
+      "name": "common",
+      "description": "общие"
+    }
+  ],
+  "paths": {
+    "/auth": {
+      "get": {
+        "tags": [
+          "common"
+        ],
+        "summary": "Получает пользователя",
+        "description": "Получает текущего пользователя в 1С",
+        "operationId": "getUser",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Вернуться данные по User",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "400": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/employee": {
+      "get": {
+        "tags": [
+          "common"
+        ],
+        "summary": "Получает сотрудника",
+        "description": "Получает сотрудника по индивидуальному коду (паролю)",
+        "operationId": "getEmployeeByCode",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "code",
+            "description": "Код сотрудника",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Вернется сотрудник",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "400": {
+            "description": "Ошибка сервера. Также проверка что сотрудник в рабочей смене",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/orders": {
+      "get": {
+        "tags": [
+          "common"
+        ],
+        "summary": "Список заказов",
+        "description": "Получает список заказов по сотруднику",
+        "operationId": "getOrdersByEmployee",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "guid",
+            "description": "guid сотрудника",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Вернется список заказов",
+            "schema": {
+              "$ref": "#/definitions/OrderItemArray"
+            }
+          },
+          "400": {
+            "description": "Ошибка сервера.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/collected": {
+      "post": {
+        "tags": [
+          "common"
+        ],
+        "summary": "Отметить сборку заказа",
+        "description": "Пытается отметить сборку заказа",
+        "operationId": "collectedOrder",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "guid",
+            "description": "guid заказа",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Вернется время когда отметили сборку",
+            "schema": {
+              "type": "string",
+              "example": "10:20"
+            }
+          },
+          "400": {
+            "description": "Ошибка сервера.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "basicAuth": []
+    }
+  ],
+  "securityDefinitions": {
+    "basicAuth": {
+      "type": "basic"
+    }
+  },
+  "definitions": {
+    "Error": {
+      "description": "Ошибка",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "description": "Код ошибки (По поытке 1)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Описание ошибки"
+        }
+      }
+    },
+    "User": {
+      "description": "Пользователь 1C",
+      "type": "object",
+      "properties": {
+        "guid": {
+          "type": "string",
+          "description": "Уникальный идентификатор"
+        },
+        "code": {
+          "type": "string",
+          "description": "Код"
+        },
+        "name": {
+          "type": "string",
+          "description": "Наименование"
+        }
+      }
+    },
+    "CatalogItem": {
+      "description": "Элемент справочника",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Вид справочника"
+        },
+        "guid": {
+          "type": "string",
+          "description": "Уникальный идентификатор"
+        },
+        "code": {
+          "type": "string",
+          "description": "Код"
+        },
+        "name": {
+          "type": "string",
+          "description": "Наименование"
+        },
+        "mark_deletion": {
+          "type": "boolean",
+          "description": "Пометка удаления"
+        },
+        "parent": {
+          "type": "string",
+          "description": "guid родителя"
+        }
+      }
+    },
+    "CatalogItemArray": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/CatalogItem"
+      }
+    },
+    "OrderItem": {
+      "description": "Заказ клиента",
+      "type": "object",
+      "properties": {
+        "guid": {
+          "type": "string",
+          "description": "Уникальный идентификатор"
+        },
+        "number": {
+          "type": "string",
+          "description": "Номер"
+        },
+        "address": {
+          "type": "string",
+          "description": "Адрес"
+        },
+        "assembly_start_time": {
+          "type": "string",
+          "description": "Время старта сборки"
+        }
+      }
+    },
+    "OrderItemArray": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/OrderItem"
+      }
+    }
+  }
+}
